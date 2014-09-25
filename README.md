@@ -1,9 +1,9 @@
-css-font-timeout
-================
+## css-font-timeout
+
 A proposal for CSS to let web developers control font timeout and rendering strategy.
 
-#Background#
-Most web browsers have adopted some of form of web font timeout:
+### Background
+Most web browsers have adopted some of form of webfont timeout:
 
 Browser            | timeout      | fallback  | swap
 ------------------ | ------------ | --------- | --------
@@ -13,22 +13,23 @@ Internet Explorer  | **0 seconds**| yes       | yes
 Safari             | N/A          | N/A       | N/A
 Opera              | *TODO*       | *TODO*    | *TODO*
 
+* Chrome and Firefox have a 3 second **timeout** after which the text is shown with the **fallback** font. Eventually, a **swap** occurs: the text is re-rendered with the intended font once it becomes available.
+* Internet Explorer has a 0 second timeout which results in immediate text rendering: if the requested font is not yet available, fallback is used, and text is rerendered later once the requested font becomes available.
+* Safari has no timeout behavior (or at least nothing beyond a baseline network timeout of 60([?](http://www.stevesouders.com/blog/2009/10/13/font-face-and-performance/)) seconds)
 
-For instance Chrome and Firefox have a 3 second **timeout** after which the text is shown with the **fallback** font. Eventually, a **swap** occurs: the text is re-rendered with the intended font once it becomes available.
+While one could argue that any of these default behaviors are reasonable, it's unfortunately inconsistent accross browsers and, more importantly, none of these one-size-fits-all approaches is insufficient to cover the range of use cases required by modern UX+performance concscious applications.
 
-On the other hand, Internet Explorer has a 0 second timeout which results in immediate text rendering: if the requested font is not yet available, fallback is used, and text is rerendered later once the requested font becomes available.
+The [Font Loading API](http://dev.w3.org/csswg/css-font-loading/) allows the developer to override some of the above behaviors, but that path requires JavaScript execution, a non trivial amount of developer effort, and ultimately does not provide the necessary hooks to deliver consistent first-paint experience - e.g. the API can be used ot set custom timeouts, but there is no well defined "first-paint" event provided by the browser that could be used to ensure consistent rendering behavior. Also, if the web developer relies on an external library for his font loading needs, it introduces extra network RTTs into the critical rendering path and delays text rendering.
 
-Safari has no timeout behavior (or at least nothing beyond a baseline network timeout of 60([?](http://www.stevesouders.com/blog/2009/10/13/font-face-and-performance/)) seconds)
+Design/performance conscious web developers have a good sense for the relative importance of a given web font to the intended user experience. We should give them the ability to control font-timeout and rendering behavior. Developers should be able to:
 
-While one could argue that any of these default behaviors are reasonable, it's unfortunately inconsistent accross browsers and, more importantly, any of those one-size-fits-all approaches is insufficient to cover the range of use cases needed by modern applications.
+* Define first-paint font rendering strategy
+* Define font rerendering behavior if the desired font is not used on first paint
+* Define custom font timeout values to trigger fallback rendering
+* Define custom font rendering and timeout strategies on per selector basis
 
-Sure, one can use the [Font Loading API](http://dev.w3.org/csswg/css-font-loading/) to carve the behavior they want. But that path requires JavaScript and a non trivial amount of effort. Also, if the web developer relies on an external library for his font loading needs, it introduces extra network RTTs into the critical rendering path and delays text rendering.
 
-Design/performance conscious web developers have a good sense for the relative importance of a given web font to the intended user experience. We should give them the ability to control font-timeout and rendering behavior.
-
-
-#Use cases#
-##Overriding the timeout behavior for a specific font##
+### `font-timeout` and `font-desirability` parameters
 
 ```css
 @font-face {
@@ -37,46 +38,53 @@ Design/performance conscious web developers have a good sense for the relative i
   font-weight: 400;
   src: local('Open Sans'), local('OpenSans'),
   url(//example.com/opensans/normal400.woff2) format('woff2');
-  font-timeout: 2s;
+  font-timeout: 2s; /* 2 second timeout */
   font-desirability: optional;
 }
 ```
 
-Where ```font-timeout: <time>``` indicates to the user agent that it should wait for the font for up to <time> after which point the text should be rendered with the fallback font.
+* ```font-timeout: <time>``` indicates to the user agent that it should wait for up to <time> for the requested font, after which point the text should be rendered with the fallback font.
+* ```font-desirability: [optional | progressive | mandatory]``` indicates to the user agent the desired text rendering strategy:
+ - `optional` - user agent should not block text rendering; if the desired font is available then it should be used, but if the font is not available then the fallback should be used; once rendered, the text is not re-rendered (i.e. first font render wins)
+ - `progressive` - user agent should not block text rendering; if the desired font is available then it should be used, but if the font is not available then the fallback should be used; once the desired font becomes available, the text should be rerendered with desired font (i.e. progressive text rendering)
+ - `mandatory` - user agent should block text rendering until the desired font is available, or until font-timeout is reached. In the latter case, fallback font should be used to render text.
 
-Where ```font-desirability: [optional | mandatory]``` indicates to the user agent what should happen when the font becomes available **after the timeout**:
- - *optional* means that the user agent should *not swap* with the intended font as it becomes available
- - *mandatory* means that the user agent should *swap*  with the intended font as it becomes available
+The combination of `font-timeout` and `font-desirability` enables the developer to specify a consistent font rendering strategy: whenever the browser needs to render text content it can consult specified parameters to determine if fallback should be used, if rerendering is required in the future, or if text rendering should be blocked until desired font is available. 
 
 
-###Examples###
-####The intended font is optional
-
-Use the intended font if it's available at "first text-paint-time" - i.e. browser is ready to perform layout and paint the specified text. If the requested font is not yet available (the request is still in flight), then the fallback font is used to render the text. Once text is rendered, it is not updated - i.e. first available font wins, and there are no delays in text rendering.
+###Examples
+#### The intended font is optional
 
 ```css
-font-timeout: 50ms; /* aggressive font timeout for fast fetch / cache lookup */
 font-desirability: optional;
-````
-
-####The intended font is critical
-For instance, you wouldn't want to show the text with a fallback font if the intented font is an [icon font](http://fortawesome.github.io/Font-Awesome/icons/).
-
-```css
-font-timeout: 5000ms;
-font-desirability: mandatory;
-````
-
-####The intended font is important but up to a point####
-Wait for the intended font for a sufficiently long time. When timeout kicks in, the user agent should revert to the fallback font until the intended font becomes available at which point the user agent should swap back to the intended font.
-
-```css
-font-timeout: 1000ms;
-font-desirability: mandatory;
 ```
 
-##Overriding the timeout behavior for specific CSS style definitions##
-With the [Font Loading API](http://dev.w3.org/csswg/css-font-loading/), one can customize the behavior of individual document fragments. The same should be achievable in CSS. In order to do that, `font-timeout` and `font-desirability` should be allowed in regular style definitions. For instance:
+Use the intended font if it is available when text is ready to be painted, and if the font resource is not yet ready (e.g. request is still in flight), then the fallback font should be used to render the text. Once text is rendered, it is not updated - i.e. first available font wins, and there are no delays in text rendering.
+
+
+#### The intended font is progressive
+
+```css
+font-desirability: progressive;
+font-timeout: 500ms; /* abandon progressive strategy after 0.5s */
+```
+
+If the desired font is not available when text is ready to be painted, use the fallback font and rerender the text once the desired font is available. Further, abandon the progressive strategy and keep using the fallback font if the desired font exceeds the specified timeout.
+
+
+#### The intended font is critical
+
+```css
+font-desirability: mandatory;
+font-timeout: 2s; /* render with fallback after 2s */
+````
+
+Hold text rendering until desired font is available, or until the specified timeout has expired. For instance, you wouldn't want to show the text with a fallback font if the intented font is an [icon font](http://fortawesome.github.io/Font-Awesome/icons/).
+
+
+## Per-selector font rendering strategy
+
+The text rendering strategy can vary based on type of content displayed on the page - e.g. headline, body text, notes, footer, etc. As such, it should be possible to define custom text rendering strategies for different document fragments via `font-timeout` and `font-desirability`. For instance: 
 
 ```css
 @font-face {
@@ -85,34 +93,40 @@ With the [Font Loading API](http://dev.w3.org/csswg/css-font-loading/), one can 
   font-weight: 400;
   src: url(//example.com/opensans/normal400.woff2) format('woff2');
   
-  /* global default, if not set then UA default (e.g. Chrome, Firefox: 3s) */ 
+  /* set global default, if not set then UA default (e.g. Chrome, Firefox: 3s) */ 
   font-timeout: 2s;
   
-   /* global default, if not set then UA default (e.g. Chrome, Firefox: mandatory) */
-  font-desirability: optional;
+   /* set global default, if not set then UA default (e.g. Chrome, Firefox: mandatory) */
+  font-desirability: progressive;
 }
 
 body { font-family: Open Sans; }
 
 #header {
-  /* header font is important for branding but up to a point */
-  font-timeout: 500ms;
-   /* we do want to show the header in the right font eventually for branding */
+  /* block rendering until desired font is avaialble.. due to branding requirements */
   font-desirability: mandatory;
+  /* if branding font is not ready within 500ms, use fallback */
+  font-timeout: 500ms;
+}
+
+#headline {
+  /* immediately render the headlines, if the desired font is available, great...
+     and if not, use fallback and don't rerender to minimize reflow */
+  font-desirability: optional;
 }
 
 #main-content {
-  /* set aggressive timeout on main content, make the main content visible ASAP! */
-  font-timeout: 100ms;
-  /* inherits font-desirability: optional. */
+  /* don't hold rendering, but rerender with desired font once available */
+  font-desirability: progressive;
+  /* give up on progressive strategy after 150ms due to UX requirements */
+  font-timeout: 150ms;
 }
 
 #footer {  
+  /* inherits font-desirability: progressive */
   /* inherits font-timeout: 2s timeout */
-  font-desirability: mandatory;
 }
 ```
 
-
-#Contributors#
+#Contributors
 With advices/contributions from: Tab Atkins, Ilya Grigorik, David Kuettel.
