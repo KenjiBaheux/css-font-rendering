@@ -112,3 +112,7 @@ body { font-family: Open Sans; }
   font-desirability: mandatory;
 }
 ```
+
+
+#Contributors#
+With advices/contributions from: Tab Atkins, Ilya Grigorik, David Kuettel.
