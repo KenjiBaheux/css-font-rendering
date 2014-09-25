@@ -1,8 +1,8 @@
-## css-font-timeout
+# css-font-timeout
 
 A proposal for CSS to let web developers control font timeout and rendering strategy.
 
-### Background
+## Background
 Most web browsers have adopted some of form of webfont timeout:
 
 Browser            | timeout      | fallback  | swap
@@ -29,7 +29,7 @@ Design/performance conscious web developers have a good sense for the relative i
 * Define custom font rendering and timeout strategies on per selector basis
 
 
-### `font-timeout` and `font-desirability` parameters
+## `font-timeout` and `font-desirability` parameters
 
 ```css
 @font-face {
@@ -52,7 +52,7 @@ Design/performance conscious web developers have a good sense for the relative i
 The combination of `font-timeout` and `font-desirability` enables the developer to specify a consistent font rendering strategy: whenever the browser needs to render text content it can consult specified parameters to determine if fallback should be used, if rerendering is required in the future, or if text rendering should be blocked until desired font is available. 
 
 
-###Examples
+### Examples
 #### The intended font is optional
 
 ```css
@@ -128,5 +128,5 @@ body { font-family: Open Sans; }
 }
 ```
 
-#Contributors
+## Contributors
 With advices/contributions from: Tab Atkins, Ilya Grigorik, David Kuettel.
