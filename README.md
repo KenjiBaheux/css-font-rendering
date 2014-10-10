@@ -32,22 +32,24 @@ Design/performance conscious web developers have a good sense for the relative i
 
 ## `font-rendering` parameter
 
-`font-rendering: optional | swap <time> | mandatory <time>`
+`font-rendering: optional | swap <time>? | mandatory <time>?`
 
 * `optional`
   * user agent should not block text rendering
   * if the desired font is available then it should be used, but if the font is not available then the fallback should be used
   * once rendered, the text is not re-rendered - i.e. first font render wins.
 
-* `swap <time>`
+* `swap <time>?`
   * user agent should not block text rendering
   * if the desired font is available then it should be used, but if the font is not available then the fallback should be used
   * once the desired font becomes available, the text should be rerendered with desired font
     * if the specified timeout is reached, then fallback remains active and text is not rerendered
+    * if timeout value is omitted, default value of 3s is used.
   
-* `mandatory <time>`
+* `mandatory <time>?`
   * user agent should block text rendering until desired font is available
     * if the specified timeout is reached, text is rendered with the fallback font
+    * if timeout value is omitted, default value of 3s is used.
 
 
 ### Examples
@@ -72,7 +74,7 @@ If the desired font is not available when text is ready to be painted, use the f
 #### The intended font is mandatory
 
 ```css
-font-rendering: mandatory 2s; /* wait for desired font, use fallback after 2s */
+font-rendering: mandatory; /* wait for desired font, use fallback after 3s (default timeout) */
 ````
 
 Block text rendering until desired font is available, or until the specified timeout has expired. For instance, you wouldn't want to show the text with a fallback font if the intented font is an [icon font](http://fortawesome.github.io/Font-Awesome/icons/).
@@ -118,7 +120,7 @@ body { font-family: Open Sans; }
 }
 
 #footer {  
-  /* inherits font-rendering: swap 2s */
+  /* inherits font-rendering: swap */
 }
 ```
 
