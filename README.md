@@ -9,10 +9,10 @@ Most web browsers have adopted some of form of webfont timeout:
 Browser            | timeout      | fallback  | swap
 ------------------ | ------------ | --------- | --------
 Chrome 35+         | 3 seconds    | yes       | yes
+Opera              | 3 seconds    | yes       | yes
 Firefox            | 3 seconds    | yes       | yes
 Internet Explorer  | **0 seconds**| yes       | yes
 Safari             | N/A          | N/A       | N/A
-Opera              | *TODO*       | *TODO*    | *TODO*
 
 * Chrome and Firefox have a 3 second **timeout** after which the text is shown with the **fallback** font. Eventually, a **swap** occurs: the text is re-rendered with the intended font once it becomes available.
 * Internet Explorer has a 0 second timeout which results in immediate text rendering: if the requested font is not yet available, fallback is used, and text is rerendered later once the requested font becomes available.
