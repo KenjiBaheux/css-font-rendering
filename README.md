@@ -82,7 +82,7 @@ Block text rendering until desired font is available, or until the specified tim
 
 ## Per-selector font rendering strategy
 
-The text rendering strategy can vary based on type of content displayed on the page - e.g. headline, body text, notes, footer, etc. As such, it should be possible to define custom text rendering strategies for different document fragments via `font-timeout` and `font-desirability`. For instance: 
+The text rendering strategy can vary based on type of content displayed on the page - e.g. headline, body text, notes, footer, etc. As such, it should be possible to define custom text rendering strategies for different document fragments via `font-rendering`. For instance: 
 
 ```css
 @font-face {
@@ -110,7 +110,7 @@ body { font-family: Open Sans; }
 #headline {
   /* immediately render the headlines, if the desired font is available, great...
      and if not, use fallback and don't rerender to minimize reflow */
-  font-desirability: optional;
+  font-rendering: optional;
 }
 
 #main-content {
