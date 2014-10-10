@@ -1,6 +1,6 @@
 # css-font-rendering
 
-A proposal for CSS to let web developers control font rendering strategy.
+A proposal to let web developers control font-rendering via CSS.
 
 ## Background
 
