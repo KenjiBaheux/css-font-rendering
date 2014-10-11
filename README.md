@@ -18,7 +18,7 @@ Safari             | N/A          | N/A       | N/A
 * Internet Explorer has a 0 second timeout which results in immediate text rendering: if the requested font is not yet available, fallback is used, and text is rerendered later once the requested font becomes available.
 * Safari has no timeout behavior (or at least nothing beyond a baseline network timeout of 60([?](http://www.stevesouders.com/blog/2009/10/13/font-face-and-performance/)) seconds)
 
-While one could argue that any of these default behaviors are reasonable, it's unfortunately inconsistent accross browsers and, more importantly, none of these one-size-fits-all approaches is insufficient to cover the range of use cases required by modern UX+performance concscious applications.
+While one could argue that any of these default behaviors are reasonable, it's unfortunately inconsistent accross browsers and, more importantly, none of these one-size-fits-all approaches is sufficient to cover the range of use cases required by modern UX+performance concscious applications.
 
 The [Font Loading API](http://dev.w3.org/csswg/css-font-loading/) allows the developer to override some of the above behaviors, but that path requires JavaScript execution, a non trivial amount of developer effort, and ultimately does not provide the necessary hooks to deliver consistent first-paint experience - e.g. the API can be used ot set custom timeouts, but there is no well defined "first-paint" event provided by the browser that could be used to ensure consistent rendering behavior. Also, if the web developer relies on an external library for his font loading needs, it introduces extra network RTTs into the critical rendering path and delays text rendering.
 
