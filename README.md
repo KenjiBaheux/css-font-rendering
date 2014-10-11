@@ -51,6 +51,8 @@ Design/performance conscious web developers have a good sense for the relative i
     * if the specified timeout is reached, text is rendered with the fallback font
     * if timeout value is omitted, default value of 3s is used.
 
+If left unspecified, font-rendering must default to `mandatory 3s` - i.e. current FF, Opera, and Chrome behavior.
+
 
 ### Examples
 #### The intended font is optional
