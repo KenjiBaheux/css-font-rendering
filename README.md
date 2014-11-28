@@ -150,7 +150,7 @@ font-rendering: block infinite; /* omitting swap is equivalent to swap infinite 
 
 Block text rendering until desired font is available, do not use any fallback (even if the font request failed).
 
-Note: This can result in a very poor user experience and should be reserved for cases where a fallback font doesn't make sense. For instance, you wouldn't want to show the text with a fallback font if the intended font is an [icon font](http://fortawesome.github.io/Font-Awesome/icons/).
+Note: blocking indefinitely with no fallback can result in a very poor user experience and should therefore be reserved for cases where a fallback font doesn't make sense. (e.g. an icon font).
 
 
 ### Other combinations
