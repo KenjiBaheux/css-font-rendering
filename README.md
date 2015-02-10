@@ -51,7 +51,8 @@ Design/performance conscious web developers have a good sense for the relative i
     * if the specified timeout is reached, text is rendered with the fallback font.
     * if timeout value is omitted, the user agent shall use a reasonable default value.
 
-If left unspecified, font-rendering must default to `auto` - i.e. leave the behavior entirely up to the user agent (e.g. see the table in the background section for an overview of existing behaviors).
+If left unspecified, font-rendering must default to `swap`.
+
 Finally, regarding the "reasonable default value" for when a keyword is missing an explicit timeout value, data analysis done in November 2014 lead Chrome to pick 3s as its default value. As network performance and technology improve, one can expect that what was deemed reasonable back then, becomes unacceptable. Therefore, we recommend that web developers specify the timeout value if they intend to rely on it.
 
 ### About the `[ [ block <timeout> ]? [ swap <timeout> ]? ]!` pattern
